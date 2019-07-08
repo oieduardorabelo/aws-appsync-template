@@ -1,0 +1,47 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Parameters:
+  ApiName:
+    Type: String
+    Default: MyProject
+  EnvMode:
+    Type: String
+    Default: Test
+
+Resources:
+
+  AppSync:
+    Type: AWS::AppSync::GraphQLApi
+    Properties:
+      Name: !Sub ${ApiName}-${EnvMode}-appsync
+      AuthenticationType: API_KEY
+
+  HttpApiKey:
+    Type: AWS::AppSync::ApiKey
+    Properties:
+      ApiId: !GetAtt AppSync.ApiId
+
+  GraphQLSchema:
+    Type: AWS::AppSync::GraphQLSchema
+    Properties:
+      ApidId: !GetAtt AppSync.ApiId
+      DefinitionS3Location: ../schemas/root.graphql
+
+  ContactsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub ${ApiName}-${EnvMode}-contacts-table
+      KeySchema:
+        - AttributeName: username
+          KeyType: HASH
+
+  ContactsTableResource:
+    Type: AWS::AppSync::DataSource
+    Properties:
+      Name: !Sub ${ApiName}-${EnvMode}-contacts-table-resource
+      Type: AMAZON_DYNAMODB
+      ServiceRoleArn: !GetAtt ApiRole.Arn
+      DynamoDBConfig:
+        AwsRegion: !Ref AWS::Region
+        TableName: !Ref ContactsTable
+      ApiId: !GetAtt AppSync.ApiId

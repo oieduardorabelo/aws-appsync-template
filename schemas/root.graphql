@@ -1,0 +1,33 @@
+##############################
+# Contact Entity
+##############################
+
+type Contact {
+  username: String!
+  fullName: String!
+  email: String!
+  phone: String
+}
+
+input ContactInput {
+  fullName: String!
+  email: String!
+  phone: String
+}
+
+##############################
+# GraphQL Entry Point
+##############################
+
+type Query {
+  getContacts: [Contact!]!
+}
+
+type Mutation {
+  addContact(username: String! contact: ContactInput!): Contact
+}
+
+type Schema {
+  query: Query
+  mutation: Mutation
+}
